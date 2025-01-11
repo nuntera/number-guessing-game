@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
+
     private final String name;
     private List<Integer> guesses;
 
@@ -11,8 +12,6 @@ public class Player {
         this.name = name;
         guesses = new ArrayList<>();
     }
-
-
 
     public void resetGuesses() {
         guesses.clear();
@@ -39,7 +38,6 @@ public class Player {
         addGuess(guess);
         return guess;
     }
-
 
     public List<Integer> getGuesses() {
         return guesses;

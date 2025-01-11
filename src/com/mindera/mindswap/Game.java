@@ -1,86 +1,80 @@
 package com.mindera.mindswap;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Game {
     private static final int MIN = 1;
     private static final int MAX = 10;
+    private static final int WINS_TO_END = 3;
 
-    private final Player player1;
-    private final Player player2;
-
+    private final List<Player> players;
+    private final int[] playerWins;
     private int gameRound;
-    private int player1Wins;
-    private int player2Wins;
 
-    public Game(Player player1, Player player2) {
-        this.player1 = player1;
-        this.player2 = player2;
-        gameRound = 0;
-        player1Wins = 0;
-        player2Wins = 0;
+    public Game(List<Player> players) {
+        if (players.size() < 2) {
+            throw new IllegalArgumentException("Game needs at least 2 players");
+        }
+        this.players = players;
+        this.playerWins = new int[players.size()];
+        this.gameRound = 0;
     }
-
 
     public void start() {
         System.out.println("Game is starting");
-        printPlayersName(player1.getName(), player2.getName());
+        printPlayersNames();
 
-        // Initial game number
         int gameNumber = RandomGenerator.generate(MIN, MAX);
-
-        while (player1Wins < 3 && player2Wins < 3) {
+        
+        while (!hasWinner()) {
             gameRound++;
-            System.out.println("Round " + gameRound);
-
-            int player1Number = this.player1.pickNumber(MIN, MAX);
-            int player2Number = this.player2.pickNumber(MIN, MAX);
-
-            boolean winnerFound = determineRoundWinner(gameNumber, player1Number, player2Number);
-            // Generate a new game number and reset guesses only if a winner is found
-            if (winnerFound) {
-                gameNumber = RandomGenerator.generate(MIN, MAX);
-                player1.resetGuesses();
-                player2.resetGuesses();
+            System.out.println("\nRound " + gameRound);
+            System.out.println("The game number is: " + gameNumber);
+            
+            boolean roundWon = false;
+            while (!roundWon) {
+                for (int i = 0; i < players.size(); i++) {
+                    Player currentPlayer = players.get(i);
+                    int guess = currentPlayer.pickNumber(MIN, MAX);
+                    System.out.println(currentPlayer.getName() + " guesses: " + guess);
+                    
+                    if (guess == gameNumber) {
+                        System.out.println(currentPlayer.getName() + " wins this round!");
+                        playerWins[i]++;
+                        roundWon = true;
+                        break;
+                    }
+                }
             }
+            
+            // Reset for next round
+            gameNumber = RandomGenerator.generate(MIN, MAX);
+            players.forEach(Player::resetGuesses);
         }
         printGameWinner();
     }
 
+    private boolean hasWinner() {
+        for (int wins : playerWins) {
+            if (wins >= WINS_TO_END) return true;
+        }
+        return false;
+    }
+
     private void printGameWinner() {
-        if (getPlayer1Wins() == 3) {
-            System.out.println(player1.getName() + " wins with " + getPlayer1Wins() + " victories.");
-        }
-        else System.out.println(player2.getName() + " wins with " + getPlayer2Wins() + " victories.");
-    }
-
-    private boolean determineRoundWinner(int gameNumber, int player1Number, int player2Number) {
-        System.out.println("The game number is: " + gameNumber);
-        System.out.println(this.player1.getName() + " number is: " + player1Number);
-        System.out.println(this.player2.getName() + " number is: " + player2Number);
-
-        if (gameNumber == player1Number) {
-            System.out.println(player1.getName() + " wins this round!");
-            player1Wins++;
-            return true;
-        } else if (gameNumber == player2Number) {
-            System.out.println(player2.getName() + " wins this round!");
-            player2Wins++;
-            return true;
-        } else {
-            System.out.println("It's a tie! No winner this round.");
-            return false;
+        for (int i = 0; i < players.size(); i++) {
+            if (playerWins[i] >= WINS_TO_END) {
+                System.out.println(players.get(i).getName() + " wins with " + playerWins[i] + " victories!");
+                return;
+            }
         }
     }
 
-    private void printPlayersName(String player1Name, String player2Name) {
-        System.out.println("Players: " + player1Name + " VS " + player2Name);
-    }
-
-
-    public int getPlayer1Wins() {
-        return player1Wins;
-    }
-
-    public int getPlayer2Wins() {
-        return player2Wins;
+    private void printPlayersNames() {
+        System.out.println("Players: " + 
+            players.stream()
+                   .map(Player::getName)
+                   .collect(Collectors.joining(" VS ")));
     }
 }

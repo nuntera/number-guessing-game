@@ -1,12 +1,17 @@
 package com.mindera.mindswap;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Main {
     public static void main(String[] args) {
+        List<Player> players = Arrays.asList(
+            new Player("Pedro"),
+            new Player("Maria"),
+            new Player("John")
+        );
 
-        Player player1 = new Player("Pedro");
-        Player player2 = new Player("Maria");
-
-        Game game = new Game(player1, player2);
+        Game game = new Game(players);
         game.start();
     }
 }
